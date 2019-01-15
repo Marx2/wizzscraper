@@ -2,6 +2,8 @@ package com.marx.wizzscraper.controller;
 
 import static java.util.Collections.singletonList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +26,7 @@ import com.marx.wizzscraper.service.CalculateService;
 @RestController
 public class WizzController
 {
+	private final static Logger LOG = LoggerFactory.getLogger(WizzController.class);
 	//	@Autowired
 //	private WizzClient wizzClient;
 	@Autowired
