@@ -34,6 +34,11 @@ public class WizzController
 
 	private RestTemplate restTemplate = new RestTemplate();
 
+	@GetMapping("/test")
+	public String test()
+	{
+		return "Everything is ok!";
+	}
 	@GetMapping("/dates")
 	public ResponseEntity<Flights> dates()
 	{
@@ -59,7 +64,7 @@ public class WizzController
 	}
 
 	@GetMapping("/")
-	public void test()
+	public void farechart()
 	{
 		final ResponseEntity<Fare> farechart = farechart("2019-05-01", "KTW", "DSA","10");
 		final Fare fare = farechart.getBody();
