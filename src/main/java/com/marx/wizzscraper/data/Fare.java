@@ -5,24 +5,24 @@ public class Fare
 
 	private OutboundFlights[] outboundFlights;
 
-	private String[] returnFlights;
+	private OutboundFlights[] returnFlights;
 
-	public OutboundFlights[] getOutboundFlights ()
+	public OutboundFlights[] getOutboundFlights()
 	{
 		return outboundFlights;
 	}
 
-	public void setOutboundFlights (OutboundFlights[] outboundFlights)
+	public void setOutboundFlights(OutboundFlights[] outboundFlights)
 	{
 		this.outboundFlights = outboundFlights;
 	}
 
-	public String[] getReturnFlights ()
+	public OutboundFlights[] getReturnFlights()
 	{
 		return returnFlights;
 	}
 
-	public void setReturnFlights (String[] returnFlights)
+	public void setReturnFlights(OutboundFlights[] returnFlights)
 	{
 		this.returnFlights = returnFlights;
 	}

@@ -2,6 +2,12 @@ package com.marx.wizzscraper.controller;
 
 import static java.util.Collections.singletonList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +15,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,38 +46,37 @@ public class WizzController
 	{
 		return "Everything is ok!";
 	}
-	@GetMapping("/dates")
-	public ResponseEntity<Flights> dates()
-	{
-		String url =
-				"https://be.wizzair.com/9.3.0/Api/search/flightDates?departureStation=KTW&arrivalStation=DSA&from=2019-01" +
-						"-16&to=2019-03-16";
-		HttpHeaders headers = getHttpHeaders();
-		headers.put("Accept", singletonList("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"));
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-//				.queryParam("msisdn", msisdn)
-//				.queryParam("email", email)
-//				.queryParam("clientVersion", clientVersion)
-//				.queryParam("clientType", clientType)
-//				.queryParam("issuerName", issuerName)
-//				.queryParam("applicationName", applicationName);
-
-		HttpEntity<?> entity = new HttpEntity<>(headers);
-
-		final ResponseEntity<Flights> flights = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity,
-				Flights.class);
-		return flights;
-	}
 
 	@GetMapping("/")
-	public void farechart()
+	public String farechart()
 	{
-		final ResponseEntity<Fare> farechart = farechart("2019-05-01", "KTW", "DSA","10");
-		final Fare fare = farechart.getBody();
-		final OutboundFlights[] outboundFlights = fare.getOutboundFlights();
-		calculateService.calculate(outboundFlights);
+		List<OutboundFlights> outboundFlights = new ArrayList<>();
+		List<OutboundFlights> returnFlights = new ArrayList<>();
+		queryFlights("2019-07-01", outboundFlights, returnFlights);
+		queryFlights("2019-07-22", outboundFlights, returnFlights);
+		queryFlights("2019-08-11", outboundFlights, returnFlights);
+		queryFlights("2019-09-01", outboundFlights, returnFlights);
+		return calculateService.calculate(outboundFlights, returnFlights);
 	}
+
+	private void queryFlights(String date, List<OutboundFlights> outboundFlights, List<OutboundFlights> returnFlights)
+	{
+		final Fare body = farechart(date, "KTW", "DSA", "10").getBody();
+
+		addNew(outboundFlights, Arrays.asList(body.getOutboundFlights()));
+		addNew(returnFlights, Arrays.asList(body.getReturnFlights()));
+	}
+
+	private void addNew(List<OutboundFlights> allFlights, List<OutboundFlights> flights)
+	{
+		Predicate<OutboundFlights> notInAll = s -> !allFlights.stream().anyMatch(d -> s.equals(d.getDate()));
+		List<OutboundFlights> newFlights = flights.stream().filter(notInAll).collect(Collectors.toList());
+		if (newFlights != null)
+		{
+			allFlights.addAll(newFlights);
+		}
+	}
+
 
 	@GetMapping("/farechart")
 	public ResponseEntity<Fare> farechart(@RequestParam(required = false) String date,
@@ -106,14 +112,19 @@ public class WizzController
 		flightQuery.setAdultCount("1");
 		flightQuery.setChildCount("0");
 		flightQuery.setDayInterval(interval);
-		FlightList[] list = new FlightList[1];
-		final FlightList flight = new FlightList();
-		list[0] = flight;
-		flight.setDepartureStation(source);
-		flight.setArrivalStation(target);
-		flight.setDate(date);
-		flightQuery.setFlightList(list);
 		flightQuery.setWdc("false");
+		FlightList[] list = new FlightList[2];
+		final FlightList flightFrom = new FlightList();
+		flightFrom.setDepartureStation(source);
+		flightFrom.setArrivalStation(target);
+		flightFrom.setDate(date);
+		list[0] = flightFrom;
+		final FlightList flightTo = new FlightList();
+		flightTo.setDepartureStation(target);
+		flightTo.setArrivalStation(source);
+		flightTo.setDate(date);
+		list[1] = flightTo;
+		flightQuery.setFlightList(list);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		HttpEntity entity = new HttpEntity(flightQuery, headers);
