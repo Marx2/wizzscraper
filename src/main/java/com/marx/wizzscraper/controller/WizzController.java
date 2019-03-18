@@ -54,11 +54,12 @@ public class WizzController
 		queryFlights("2019-07-22", outboundFlights, returnFlights);
 		queryFlights("2019-08-11", outboundFlights, returnFlights);
 		queryFlights("2019-09-01", outboundFlights, returnFlights);
+		//queryFlights("2019-08-07", outboundFlights, returnFlights);
 		return calculateService.calculate(outboundFlights, returnFlights);
 	}
 
 	private void queryFlights(final String date, final List<OutboundFlights> outboundFlights,
-			final List<OutboundFlights> returnFlights)
+	                          final List<OutboundFlights> returnFlights)
 	{
 		final Fare body = farechart(date, "KTW", "DSA", "10").getBody();
 
@@ -79,8 +80,9 @@ public class WizzController
 
 	@GetMapping("/farechart")
 	public ResponseEntity<Fare> farechart(@RequestParam(required = false) String date,
-			@RequestParam(required = false) String source, @RequestParam(required = false) String target,
-			@RequestParam(required = false) String interval)
+	                                      @RequestParam(required = false) String source,
+	                                      @RequestParam(required = false) String target,
+	                                      @RequestParam(required = false) String interval)
 	{
 		if (date == null || date.isEmpty())
 		{
@@ -108,7 +110,7 @@ public class WizzController
 		headers.put("Origin", singletonList("https://wizzair.com"));
 
 		final FlightQuery flightQuery = new FlightQuery();
-		flightQuery.setAdultCount("1");
+		flightQuery.setAdultCount("3");
 		flightQuery.setChildCount("0");
 		flightQuery.setDayInterval(interval);
 		flightQuery.setWdc("false");
@@ -136,7 +138,7 @@ public class WizzController
 	{
 		final HttpHeaders headers = new HttpHeaders();
 		headers.put("User-Agent",
-				singletonList("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0"));
+		            singletonList("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0"));
 		headers.put("Accept-Language", singletonList("en-US,en;q=0.5"));
 		headers.put("Cache-Control", singletonList("max-age=0"));
 		headers.put("Connection", singletonList("keep-alive"));

@@ -29,28 +29,28 @@ public class CalculateService
 	private final String app = pln + eol;
 
 
-	public String calculate(List<OutboundFlights> outboundFlights, List<OutboundFlights> returnFlights)
+	public String calculate(final List<OutboundFlights> outboundFlights, final List<OutboundFlights> returnFlights)
 	{
-		List<DatePrice> outboundConverted = convert(outboundFlights);
-		List<DatePrice> returnConverted = convert(returnFlights);
+		final List<DatePrice> outboundConverted = convert(outboundFlights);
+		final List<DatePrice> returnConverted = convert(returnFlights);
 		return findCheapestRoute(outboundConverted, returnConverted, 5, 7);
 	}
 
-	private List<DatePrice> convert(List<OutboundFlights> outboundFlights)
+	private List<DatePrice> convert(final List<OutboundFlights> outboundFlights)
 	{
-		List<DatePrice> list = new ArrayList<>();
-		for (OutboundFlights outboundFlight : outboundFlights)
+		final List<DatePrice> list = new ArrayList<>();
+		for (final OutboundFlights outboundFlight : outboundFlights)
 		{
-//			LOG.info(outboundFlight.getDate() + ": " + outboundFlight.getPrice().getAmount() + outboundFlight.getPrice()
-//					.getCurrencyCode());
+			//LOG.info(outboundFlight.getDate() + ": " + outboundFlight.getPrice().getAmount() + outboundFlight.getPrice()
+			//                                                                                                 .getCurrencyCode());
 			Double price = Double.parseDouble(outboundFlight.getPrice().getAmount());
 			if (outboundFlight.getPrice().getCurrencyCode().equals("GBP"))
 			{
 				price = price.doubleValue() * GBP;
 			}
-//			LOG.info(outboundFlight.getPrice().getAmount() + "->" + price + " " + outboundFlight.getPrice().getCurrencyCode());
-			LocalDate localDate = LocalDate.parse(outboundFlight.getDate().substring(0, 10), formatter);
-			DatePrice datePrice = new DatePrice(localDate, price.intValue());
+			//LOG.info(outboundFlight.getPrice().getAmount() + "->" + price + " " + outboundFlight.getPrice().getCurrencyCode());
+			final LocalDate localDate = LocalDate.parse(outboundFlight.getDate().substring(0, 10), formatter);
+			final DatePrice datePrice = new DatePrice(localDate, price.intValue());
 			if (price > 0)
 			{
 				list.add(datePrice);
@@ -59,23 +59,24 @@ public class CalculateService
 		return list;
 	}
 
-	private String findCheapestRoute(List<DatePrice> outboundFlights, List<DatePrice> returnConverted, int min, int max)
+	private String findCheapestRoute(final List<DatePrice> outboundFlights, final List<DatePrice> returnConverted, final int min,
+	                                 final int max)
 	{
-		List<Period> periods = new ArrayList<>();
+		final List<Period> periods = new ArrayList<>();
 		LocalDate start = null;
 		Integer startPrice = null;
 		LocalDate end = null;
 		Integer endPrice = null;
-		for (DatePrice datePriceStart : outboundFlights)
+		for (final DatePrice datePriceStart : outboundFlights)
 		{
 			start = datePriceStart.getDate();
 			startPrice = datePriceStart.getPrice();
 
-			for (DatePrice datePrice : returnConverted)
+			for (final DatePrice datePrice : returnConverted)
 			{
 				end = datePrice.getDate();
 				endPrice = datePrice.getPrice();
-				long diff = start.until(end, ChronoUnit.DAYS);
+				final long diff = start.until(end, ChronoUnit.DAYS);
 
 				if (diff < min)
 				{
@@ -85,20 +86,20 @@ public class CalculateService
 				{
 					continue;
 				}
-				Period period = new Period(start, end, startPrice, endPrice);
+				final Period period = new Period(start, end, startPrice, endPrice);
 				periods.add(period);
 			}
 		}
 
 		Collections.sort(periods);
-		Map<String, List<Period>> group = group(periods);
+		final Map<String, List<Period>> group = group(periods);
 		return formatOutput(group);
 	}
 
-	private Map<String, List<Period>> group(List<Period> periods)
+	private Map<String, List<Period>> group(final List<Period> periods)
 	{
-		Map<String, List<Period>> groups = new LinkedHashMap<>();
-		for (Period p : periods)
+		final Map<String, List<Period>> groups = new LinkedHashMap<>();
+		for (final Period p : periods)
 		{
 			List<Period> periodsForPrice = groups.get(String.valueOf(p.getFullPrice()));
 			if (periodsForPrice == null)
@@ -111,36 +112,38 @@ public class CalculateService
 		return groups;
 	}
 
-	private String formatOutput(Map<String, List<Period>> groups)
+	private String formatOutput(final Map<String, List<Period>> groups)
 	{
-		StringBuffer r = new StringBuffer();
-		int priceBaggage10kgx2 = 84 * 2;
-		int priceBaggage20kgx1 = 155;
-		int priceBaggage2way = priceBaggage10kgx2 * 2;
-		int priceSeats = 2 * (60 + 55 + 55);
+		final StringBuffer r = new StringBuffer();
+		final int priceBaggage10kgx2 = 90 * 2;
+		final int priceBaggage20kgx1 = 150;
+		final int priceBaggage32kgx1 = 232;
+		final int priceBaggage2way = priceBaggage20kgx1 * 2;
+		final int priceSeats = 2 * (43 + 39 + 39);
 		r.append("Bagaz: " + priceBaggage2way).append(app);
 		r.append("Siedzenia: " + priceSeats).append(app);
 		r.append(eol);
-		for (Map.Entry<String, List<Period>> e : groups.entrySet())
+		for (final Map.Entry<String, List<Period>> e : groups.entrySet())
 		{
-			Optional<Period> first = e.getValue().stream().findFirst();
+			final Optional<Period> first = e.getValue().stream().findFirst();
 			if (first.isPresent())
 			{
-				Period c = first.get();
-				long days = c.getStart().until(c.getEnd(), ChronoUnit.DAYS);
-				int price3Persons = c.getFullPrice() * 3;
-				int totalPrice = price3Persons + priceBaggage2way + priceSeats;
-				int wizzClub = -270;
-				int totalWizzClubPrice = totalPrice + wizzClub;
+				final Period c = first.get();
+				final long days = c.getStart().until(c.getEnd(), ChronoUnit.DAYS);
+				final int price3Persons = c.getFullPrice() * 3;
+				final int totalPrice = price3Persons + priceBaggage2way + priceSeats;
+				final int wizzClub = -(45 + 45);
+				final int totalWizzClubPrice = totalPrice + wizzClub;
 				r.append(c.getFullPrice() + " (" + c.getStartPrice() + "+" + c.getEndPrice() + ")").append(eol);
 				r.append("Bilety: " + price3Persons).append(app);
 				r.append("SUMA: " + totalPrice).append(app);
 				r.append("SUMA (Wizz Club): " + totalWizzClubPrice).append(app);
 			}
-			for (Period period : e.getValue())
+			for (final Period period : e.getValue())
 			{
 				r.append(period.getStart() + " " + period.getEnd() + " (" + period.getStart()
-						.until(period.getEnd(), ChronoUnit.DAYS) + " dni)" + eol);
+				                                                                  .until(period.getEnd(),
+				                                                                         ChronoUnit.DAYS) + " dni)" + eol);
 			}
 			r.append(eol);
 		}
